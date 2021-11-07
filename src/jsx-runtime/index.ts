@@ -63,7 +63,8 @@ jsx.setGlobalThis = (newThis: Window & typeof globalThis) => {
 jsx.renderDOM = (
   renderable: ijJSX.Node,
   container: jsxDOMContainer = null,
-  component: ijJSX.Component | null = null
+  component: ijJSX.Component | null = null,
+  replace = false
 ): jsxDOMElement => {
   const isComponent = (renderable instanceof Component)
   // @ts-ignore
@@ -112,6 +113,12 @@ jsx.renderDOM = (
           attrVal(null)
         }
       }
+
+      if(name.startsWith("data-")) {
+        // @ts-ignore
+        elem.setAttribute(name, attrVal)
+      }
+
       // @ts-ignore
       elem[name] = attrVal
       // @ts-ignore
@@ -134,7 +141,11 @@ jsx.renderDOM = (
   }
 
   if (container !== null) {
-    container.appendChild(elem)
+    if(replace)
+      // @ts-ignore
+      container.replaceChildren(elem)
+    else
+      container.appendChild(elem)
   }
 
   if (isComponent && component !== null && component.onDidMount !== undefined) {
@@ -243,6 +254,10 @@ declare global {
   }
 }
 
-const render = jsx.renderDOM
+const render = (
+    renderable: ijJSX.Node,
+    container: jsxDOMContainer = null,
+    component: ijJSX.Component | null = null,
+) => jsx.renderDOM(renderable, container, component, true)
 
 export { jsx, jsx as jsxs, jsxFragment as Fragment, render, Component }
